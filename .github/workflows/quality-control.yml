@@ -5,26 +5,39 @@ on:
         types: [opened, edited, reopened, synchronize]
     pull_request_review_comment:
         types: [created, edited]
+    workflow_dispatch:
 
 jobs:
-    commitlint:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v6.0.2
-              with:
-                  fetch-depth: 0
+  commitlint:
+      runs-on: ubuntu-latest
+      steps:
+          - uses: actions/checkout@v6.0.2
+            with:
+                fetch-depth: 0
 
-            - name: Install commitlint
-              run: npm install --save-dev @commitlint/config-conventional @commitlint/cli
+          - name: Install commitlint
+            run: npm install --save-dev @commitlint/config-conventional @commitlint/cli
 
-            - name: Validate current commit
-              run: npx commitlint --from HEAD~1 --to HEAD
+          - name: Validate current commit
+            run: npx commitlint --from HEAD~1 --to HEAD
 
-            - name: Validate PR commits
-              if: github.event_name == 'pull_request'
-              run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to HEAD
+          - name: Validate PR commits
+            if: github.event_name == 'pull_request'
+            run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to HEAD
 
-            - name: Install uv
-              uses: astral-sh/setup-uv@v7.3.0
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v7.3.0
+        name: Setup uv
+
+      - name: Sync uv
+        run: |
+          uv sync --dev
+          
 
 
