@@ -1,6 +1,7 @@
 import os
 import signal
 import subprocess
+from pathlib import Path
 from typing import Sequence
 
 import click
@@ -73,21 +74,35 @@ def compose():
     type=click.Path(exists=False),
     help="Path to docker-compose YAML file",
 )
-def up(file_path=None):
-    if file_path:
-        try:
-            yaml_text = read_file(file_path)
-            deployment = load_deployment(yaml_text)
-            for name, service in deployment.services.items():
-                container_name = build_container_name("henchman", name)
-                click.echo(
-                    f"{name}\n{' '.join(service.build_run_command(container_name=container_name))}"
-                )
-                run_and_forward(
-                    service.build_run_command(container_name=container_name)
-                )
-        except Exception as exc:
-            raise click.ClickException(str(exc))
+@click.option(
+    "-d",
+    "--detach",
+    "--detached",
+    "detached",
+    is_flag=True,
+    default=False,
+    help="Run containers in detached mode",
+)
+def up(file_path=None, detached=False):
+    if not file_path:
+        click.echo("No file path provided.")
+        return True
+
+    try:
+        working_dir = Path.cwd().name
+        yaml_text = read_file(file_path)
+        deployment = load_deployment(yaml_text, detached)
+        for name, service in deployment.services.items():
+            container_name = build_container_name(working_dir, name)
+            container_run_command = service.build_run_command(container_name=container_name)
+            click.echo(
+                f"{name}\n---\n{' '.join(container_run_command)}"
+            )
+            run_and_forward(
+                container_run_command
+            )
+    except Exception as exc:
+        raise click.ClickException(str(exc))
 
 
 @compose.command()
@@ -100,7 +115,34 @@ def up(file_path=None):
     help="Path to docker-compose YAML file",
 )
 def down(file_path=None):
-    pass
+    if not file_path:
+        click.echo("No file path provided.")
+        return True
+
+    try:
+        working_dir = Path.cwd().name
+        yaml_text = read_file(file_path)
+        deployment = load_deployment(yaml_text, detached=True)
+        for name, service in deployment.services.items():
+            container_name = build_container_name(working_dir, name)
+
+            container_stop_command = service.build_stop_command(container_name=container_name)
+            click.echo(
+                f"{name}\n---\n{' '.join(container_stop_command)}"
+            )
+            run_and_forward(
+                container_stop_command
+            )
+
+            # container_remove_command = service.build_remove_command(container_name=container_name)
+            # click.echo(
+            #     f"{name}\n---\n{' '.join(container_remove_command)}"
+            # )
+            # run_and_forward(
+            #     container_remove_command
+            # )
+    except Exception as exc:
+        raise click.ClickException(str(exc))
 
 
 if __name__ == "__main__":
