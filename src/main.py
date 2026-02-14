@@ -1,6 +1,6 @@
 import click
 
-from src.utils import read_yml_file
+from src.utils import read_file
 
 
 @click.group()
@@ -38,7 +38,7 @@ def up(extra_args=None, file_path=None):
         # the path (and supports '-' for stdin) before we build the docker
         # command. Any errors will be reported as a ClickException.
         try:
-            yaml_text = read_yml_file(file_path)
+            yaml_text = read_file(file_path)
         except Exception as exc:
             raise click.ClickException(str(exc))
 

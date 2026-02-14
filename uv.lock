@@ -38,6 +38,7 @@ version = "0.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
+    { name = "pydantic" },
     { name = "python-on-whales" },
     { name = "pyyaml" },
 ]
@@ -51,6 +52,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.1.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-on-whales", specifier = ">=0.80.0" },
     { name = "pyyaml", specifier = ">=6.0.3" },
 ]
