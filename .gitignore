@@ -1,0 +1,6 @@
+# IDE
+.idea/
+
+# Project specific
+__pycache__/
+.venv/
