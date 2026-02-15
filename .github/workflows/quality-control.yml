@@ -7,6 +7,10 @@ on:
         types: [created, edited]
     workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   commitlint:
       runs-on: ubuntu-latest
@@ -35,10 +39,18 @@ jobs:
       - uses: astral-sh/setup-uv@v7.3.0
         name: Setup uv
 
-      - name: Sync uv
+      - name: Install dependencies
         run: |
           uv sync --dev
-          uv run pytest
+      - name: Test
+        run: |
+          uv run pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=src tests/ | tee pytest-coverage.txt
+
+      - name: Generate coverage report
+        uses: MishaKav/pytest-coverage-comment@v1.2.0
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
           
 
 
