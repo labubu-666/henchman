@@ -7,18 +7,19 @@ from pydantic import BaseModel
 def build_container_name(working_dir: str, service: str) -> str:
     return f"{working_dir}_{service}_1"
 
-
 class Service(BaseModel):
     detached: bool
     image: str
+    ports: list[str] = []
 
     def build_run_command(self, container_name: str) -> list:
         """Build the docker run command for this service."""
 
         command = ["docker", "run", "--name", container_name, "--rm"]
         if bool(self.detached):
-            # docker uses --detach (or -d) to run containers in the background
             command.append("--detach")
+        for port in self.ports:
+            command.extend(["--publish", port])
         command.append(self.image)
         return command
 
