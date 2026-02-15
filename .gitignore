@@ -4,3 +4,7 @@
 # Project specific
 __pycache__/
 .venv/
+
+.coverage
+pytest.xml
+pytest-coverage.txt
